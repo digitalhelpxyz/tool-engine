@@ -1,4 +1,4 @@
-/* tool-engine core v1 - shared workspace for all tool sites */
+/* tool-engine core v1.1 - shared workspace for all tool sites */
 (function(){
 var IT=window.IT=window.IT||{};
 if(IT.v)return;IT.v=1;IT.tools={};IT.unit='px';IT.dpi=300;
@@ -23,7 +23,10 @@ var css='.it-wrap{max-width:780px;margin:0 auto;font-family:inherit;color:#0f1b2
 '.it-dm{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none}.it-db{position:absolute;box-shadow:0 0 0 9999px rgba(0,0,0,.5)}'+
 '.it-cb{position:absolute;border:2px solid #fff;cursor:move;touch-action:none}.it-cb i{position:absolute;width:26px;height:26px;background:#fff;border:3px solid #0b6e5f;border-radius:50%;touch-action:none}'+
 '.it-cb i[data-h=nw]{left:-14px;top:-14px}.it-cb i[data-h=ne]{right:-14px;top:-14px}.it-cb i[data-h=sw]{left:-14px;bottom:-14px}.it-cb i[data-h=se]{right:-14px;bottom:-14px}'+
-'.it-pc{max-width:100%;max-height:44vh;border-radius:8px;background:#f4f6f8}.it-bt2{display:flex;flex-wrap:wrap;gap:8px}.it-bt2 button{padding:10px 12px;border:1px solid #c5cdd9;border-radius:8px;background:#fff;font:inherit;font-weight:700;cursor:pointer}';
+'.it-pc{max-width:100%;max-height:44vh;border-radius:8px;background:#f4f6f8}.it-bt2{display:flex;flex-wrap:wrap;gap:8px}.it-bt2 button{padding:10px 12px;border:1px solid #c5cdd9;border-radius:8px;background:#fff;font:inherit;font-weight:700;cursor:pointer}'+
+'.it-drop.sm{padding:12px}.it-drop.sm b{font-size:15px}.it-drop.sm span{display:none}.it-drop span{display:block}'+
+'.it-pl button{padding:7px 14px;border:1px solid #c5cdd9;border-radius:20px;background:#fff;color:#0f1b2d;font:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-right:6px}.it-pl button.on{background:#0b6e5f;color:#fff;border-color:#0b6e5f}'+
+'.it-list.one .it-card{display:grid;grid-template-columns:120px 1fr;gap:4px 12px;align-items:start}.it-list.one .it-th{grid-column:1;grid-row:1/span 3;height:150px}.it-list.one .it-card>div{grid-column:2}.it-list.one .it-bt{flex-wrap:wrap}.it-list.one .it-x{right:6px;top:6px}';
 var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 var $=function(r,s){return r.querySelector(s)},$$=function(r,s){return [].slice.call(r.querySelectorAll(s))};
 function mk(w,h){var c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));return c}
@@ -111,8 +114,8 @@ if(k==='l')t.rot=(t.rot+270)%360;else if(k==='r')t.rot=(t.rot+90)%360;else if(k=
 IT.modal('Rotate and flip',b,function(){it.o.rot=t.rot;it.o.fh=t.fh;it.o.fv=t.fv;if(!it.pre){delete it.o.rw;delete it.o.rh}done()},pr)}
 function mount(el,cfg){
 var D=el.dataset,S={items:[]};
-el.innerHTML='<div class="it-wrap"><label class="it-drop"><input type="file" accept="image/*" multiple hidden><b>Select images</b>or drop them here</label>'+
-'<div class="it-ws" hidden><div class="it-ut">Unit: <select class="un"><option>px</option><option>mm</option><option>cm</option><option>in</option></select><span class="dp" hidden>DPI <input class="dpi" type="number" value="'+IT.dpi+'" style="width:80px"></span></div><div class="it-list"></div><div class="it-opts"></div><button type="button" class="it-b it-go"></button></div>'+
+el.innerHTML='<div class="it-wrap"><label class="it-drop"><input type="file" accept="image/*" multiple hidden><b>Select images</b><span>or drop them here</span></label>'+
+'<div class="it-ws" hidden><div class="it-ut">Show size in: <span class="un it-pl"><button type="button" data-u="px">Pixels</button><button type="button" data-u="mm">MM</button><button type="button" data-u="cm">CM</button><button type="button" data-u="in">Inch</button></span><span class="dp" hidden>DPI <input class="dpi" type="number" value="'+IT.dpi+'" style="width:80px"></span></div><div class="it-list"></div><div class="it-opts"></div><button type="button" class="it-b it-go"></button></div>'+
 '<div class="it-rs" hidden><div class="it-rl"></div><div class="za" style="margin-top:10px"></div></div></div>';
 var inp=$(el,'input[type=file]'),dz=$(el,'.it-drop'),ws=$(el,'.it-ws'),list=$(el,'.it-list'),go=$(el,'.it-go'),rs=$(el,'.it-rs'),rl=$(el,'.it-rl'),un=$(el,'.un'),dpi=$(el,'.dpi'),dp=$(el,'.dp');
 $(el,'.it-opts').innerHTML=cfg.options?cfg.options(D):'';go.textContent=D.btn||cfg.btn||'Download';
@@ -126,9 +129,9 @@ th.width=Math.min(src.width,240);th.height=Math.max(1,Math.round(th.width*src.he
 card.onclick=function(e){var a=e.target.getAttribute('data-a');if(!a)return;
 if(a==='x'){S.items.splice(i,1);draw()}else open(it,a==='r'?'resize':a==='c'?'crop':'rotate')};
 list.appendChild(card)});
-ws.hidden=!S.items.length;dp.hidden=IT.unit==='px'}
+ws.hidden=!S.items.length;dp.hidden=IT.unit==='px';list.className='it-list'+(S.items.length===1?' one':'');dz.classList.toggle('sm',S.items.length>0);$(dz,'b').textContent=S.items.length?'+ Add more images':'Select images';$$(un,'button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-u')===IT.unit)})}
 function open(it,k){(k==='crop'?popCrop:k==='rotate'?popRot:popResize)(it,draw)}
-un.onchange=function(){IT.unit=un.value;draw()};dpi.onchange=function(){IT.dpi=+dpi.value||300;draw()};
+$$(un,'button').forEach(function(b){b.onclick=function(){IT.unit=b.getAttribute('data-u');draw()}});dpi.onchange=function(){IT.dpi=+dpi.value||300;draw()};
 function load(f){return new Promise(function(ok){var im=new Image(),url=URL.createObjectURL(f);
 im.onload=function(){var w=im.naturalWidth,h=im.naturalHeight,m=Math.min(1,700/Math.max(w,h)),sm=mk(w*m,h*m);sm.getContext('2d').drawImage(im,0,0,sm.width,sm.height);
 var it={file:f,url:url,img:im,w:w,h:h,name:f.name,size:f.size,o:{},sm:sm,pre:!!(D.w&&D.h)};
@@ -137,7 +140,7 @@ im.onerror=function(){ok(null)};im.src=url})}
 async function pick(files){
 var a=[].filter.call(files,function(f){return f.type.indexOf('image/')===0}),first=!S.items.length;
 for(var i=0;i<a.length;i++){var it=await load(a[i]);if(it)S.items.push(it)}
-un.value=IT.unit;draw();rs.hidden=true;
+draw();rs.hidden=true;
 if(first&&D.open&&S.items.length)open(S.items[0],D.open)}
 inp.onchange=function(){pick(inp.files);inp.value=''};
 ['dragover','dragenter'].forEach(function(e){dz.addEventListener(e,function(v){v.preventDefault();dz.classList.add('over')})});
