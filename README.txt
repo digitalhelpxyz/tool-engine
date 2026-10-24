@@ -2,7 +2,7 @@ TOOL ENGINE REPO (digitalhelpxyz/tool-engine)
 
 WHAT IS IN HERE
 manifest.json        tells the site which file is the newest for each pack
-packs/image.v3.js    image tools (resize, crop, rotate, convert, compress, watermark, PDF, background remover, passport photo studio)
+packs/image.v2.js    image tools (resize, crop, rotate, convert, compress, watermark, PDF and more)
 packs/pdf.v1.js      PDF tools
 packs/video.v1.js    video tools
 packs/common.v1.js   common tools (word counter, case converter, password, QR, percentage, age, EMI, GST)
