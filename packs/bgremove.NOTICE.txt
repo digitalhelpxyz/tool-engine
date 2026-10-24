@@ -1,0 +1,4 @@
+bgremove.v1.js is a bundle of @imgly/background-removal 1.4.5 (with onnxruntime-web), built with esbuild.
+The library is licensed under AGPL-3.0 (https://github.com/imgly/background-removal-js). Its source is public at that address.
+If you run this on a commercial site, read the licence or ask IMG.LY about a commercial licence.
+The AI model files are downloaded from the library's official data host the first time the tool runs.
