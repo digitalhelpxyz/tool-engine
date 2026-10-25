@@ -2,7 +2,7 @@
   "version": 3,
   "packs": {
     "pdf": "packs/pdf.v1.js",
-    "photo": "packs/photo.v2.js",
+    "photo": "packs/photo.v3.js",
     "video": "packs/video.v1.js",
     "common": "packs/common.v1.js",
     "seo": "packs/seo.v1.js",
