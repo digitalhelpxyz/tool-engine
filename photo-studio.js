@@ -15,7 +15,7 @@ if(!document.getElementById('txps-style')){var st=document.createElement('style'
 var bgModulePromise;
 function aiRemove(file,onProgress){
   if(!bgModulePromise) bgModulePromise=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm');
-  return bgModulePromise.then(function(mod){var fn=mod.default||mod.removeBackground;if(typeof fn!=='function')throw new Error('Background-removal engine could not start.');return fn(file,{model:'isnet_quint8',output:{format:'image/png',quality:1,type:'foreground'},progress:function(k,c,t){if(onProgress)onProgress(k,c,t)}})});
+  return bgModulePromise.then(function(mod){var fn=mod.default||mod.removeBackground;if(typeof fn!=='function')throw new Error('Background-removal engine could not start.');return fn(file,{model:'isnet_fp16',output:{format:'image/png',quality:1,type:'foreground'},progress:function(k,c,t){if(onProgress)onProgress(k,c,t)}})});
 }
 function imageFromBlob(blob){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(blob);im.onload=function(){URL.revokeObjectURL(u);ok(im)};im.onerror=function(){URL.revokeObjectURL(u);no(new Error('This image could not be opened. Try a JPG or PNG photo.'))};im.src=u})}
 function readImage(file){if(!file||!/^image\//.test(file.type))return Promise.reject(new Error('Please choose a JPG, PNG or WebP image.'));if(file.size>25*1024*1024)return Promise.reject(new Error('Please choose an image smaller than 25 MB for smoother browser processing.'));return imageFromBlob(file)}
