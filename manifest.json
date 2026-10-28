@@ -3,6 +3,7 @@
   "packs": {
     "pdf": "packs/pdf.v1.js",
     "poultry": "packs/poultry.v3.js",
+     "business": "packs/business.v1.js",
     "photo": "packs/photo.v4.js",
     "video": "packs/video.v1.js",
     "common": "packs/common.v1.js",
