@@ -1,4 +1,4 @@
-/* tool-engine poultry pack v3: Poultry Profit, FCR, Mortality, Break-even, EPEF, Feed and Egg Cost calculators. Needs form.js (IT.form). */
+/* tool-engine poultry pack v4: Poultry Profit, FCR, Mortality, Break-even, EPEF, Feed and Egg Cost calculators. Needs form.js (IT.form). */
 (function(){
 var IT=window.IT;if(!IT||!IT.form)return;
 var $=function(r,s){return r.querySelector(s)},esc=IT.esc,copy=IT.copy,num=IT.num,nf=IT.nf;
