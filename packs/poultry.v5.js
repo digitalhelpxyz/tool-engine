@@ -1,4 +1,4 @@
-/* tool-engine poultry pack v4: Poultry Profit, FCR, Mortality, Break-even, EPEF, Feed and Egg Cost calculators. Needs form.js (IT.form). */
+/* tool-engine poultry pack v5: Poultry Profit, FCR, Mortality, Break-even, EPEF, Feed and Egg Cost calculators. Needs form.js (IT.form). */
 (function(){
 var IT=window.IT;if(!IT||!IT.form)return;
 var $=function(r,s){return r.querySelector(s)},esc=IT.esc,copy=IT.copy,num=IT.num,nf=IT.nf;
@@ -21,8 +21,10 @@ function inp(name,ph){return '<input name="'+name+'" type="number" min="0" step=
 var HTML='<div class="pt"><input type="hidden" name="mode" value="farmer"><div class="pt-mode"><button type="button" data-a="farmer" class="on">Farmer Mode</button><button type="button" data-a="company">Company Mode</button></div><p class="pt-hint pt-farm">Simple mode for your own farm: enter bags, rates and your own work.</p><p class="pt-hint pt-comp">Detailed mode: enter total costs for the whole batch.</p><h3 class="pt-h">1. Flock details</h3><div class="ct-in"><label>Poultry type'+sel('type',[['broiler','Broiler (meat chicken)'],['layer','Layer (eggs)'],['desi','Desi / country chicken'],['turkey','Turkey'],['duck','Duck'],['quail','Quail'],['other','Other meat birds']])+'</label><label>Currency'+sel('cur',[['INR','INR \u20b9'],['PKR','PKR Rs'],['BDT','BDT \u09f3'],['NPR','NPR Rs'],['LKR','LKR Rs'],['USD','USD $'],['EUR','EUR \u20ac'],['GBP','GBP \u00a3'],['NGN','NGN \u20a6'],['KES','KES KSh'],['AED','AED']])+'</label></div>'+
 '<div class="ct-in"><label>Number of birds placed *'+inp('n','e.g. 1000')+'</label><label>Birds died <small>(optional)</small>'+inp('died','e.g. 30')+'</label><label>Cycle / period (days) *'+inp('days','e.g. 42')+'</label></div>'+
 '<h3 class="pt-h">2. Selling</h3>'+
-'<div class="ct-in pt-meat"><label>Average selling weight per bird *<span class="row2">'+inp('w','e.g. 2.2')+sel('wu',[['kg','kg'],['g','grams']])+'</span></label><label>Selling price *<span class="row2">'+inp('p','e.g. 105')+sel('pu',[['kg','per kg'],['bird','per bird']])+'</span></label></div>'+
-'<div class="ct-in pt-meat pt-farm"><label>Total weight sold in kg <small>(optional, used instead of average weight)</small>'+inp('tw','e.g. 2100')+'</label></div>'+
+'<div class="ct-in pt-meat pt-comp"><label>Average selling weight per bird *<span class="row2">'+inp('w','e.g. 2.2')+sel('wu',[['kg','kg'],['g','grams']])+'</span></label><label>Selling price *<span class="row2">'+inp('p','e.g. 105')+sel('pu',[['kg','per kg'],['bird','per bird']])+'</span></label></div>'+
+'<div class="ct-in pt-meat pt-farm"><label>Weight I know'+sel('wmode',[['avg','Average weight per bird'],['tot','Total weight sold']])+'</label><label>Weight *<span class="row2">'+inp('fw','e.g. 2.2')+sel('fwu',[['kg','kg'],['g','grams']])+'</span></label></div>'+
+'<div class="ct-in pt-meat pt-farm"><label>Selling rate *<span class="row2">'+inp('fp1','e.g. 105')+sel('fpu',[['kg','per kg'],['bird','per bird']])+'</span></label></div>'+
+'<details class="pt-more pt-meat pt-farm"><summary>Sold in more than one lot? (different rates)</summary><p class="pt-hint">Lot 1 uses the selling rate above. Birds in all lots must add up to the birds sold, and all lots are taken to have the same average weight.</p><div class="ct-in"><label>Lot 1: birds sold <small>(optional)</small>'+inp('lb1','e.g. 500')+'</label><label>Lot 2: birds sold'+inp('lb2','e.g. 460')+'</label><label>Lot 2: rate'+inp('fp2','e.g. 98')+'</label></div><div class="ct-in"><label>Lot 3: birds sold'+inp('lb3','e.g. 0')+'</label><label>Lot 3: rate'+inp('fp3','e.g. 0')+'</label></div></details>'+
 '<div class="ct-in pt-egg"><label>Egg production (hen-day %) *'+inp('prod','e.g. 85')+'</label><label>Total eggs produced <small>(optional, used instead of %)</small>'+inp('eggs','e.g. 150000')+'</label></div>'+
 '<div class="ct-in pt-egg"><label>Egg price *<span class="row2">'+inp('ep','e.g. 6')+sel('epu',[['egg','per egg'],['dozen','per dozen'],['100','per 100 eggs'],['tray','per tray (30)']])+'</span></label><label>Price of old hens sold <small>(per bird, optional)</small>'+inp('cull','e.g. 150')+'</label></div>'+
 '<h3 class="pt-h pt-comp">3. Costs <small style="font-weight:400">(total for the whole batch)</small></h3>'+
@@ -45,14 +47,14 @@ else if(a==='go'){up();var o=$(root,'.ct-out');if(o&&o.scrollIntoView)o.scrollIn
 else if(a==='copy'){var t=root._txt||'';if(t)copy(t,e.target)}});
 function $$(r,s){return [].slice.call(r.querySelectorAll(s))}},
 update:function(R,out,root){
-var layer=R('[name=type]').value==='layer',type=R('[name=type]').value,cu=CUR[R('[name=cur]').value]||CUR.INR,pt=R('.pt');pt.classList.toggle('layer',layer);root._txt='';var farmer=R('[name=mode]').value!=='company';pt.classList.toggle('farmer',farmer);[].forEach.call(root.querySelectorAll('.pt-mode button'),function(bt){bt.classList.toggle('on',bt.getAttribute('data-a')===(farmer?'farmer':'company'))});
+var layer=R('[name=type]').value==='layer',type=R('[name=type]').value,cu=CUR[R('[name=cur]').value]||CUR.INR,pt=R('.pt');pt.classList.toggle('layer',layer);root._txt='';var farmer=R('[name=mode]').value!=='company';pt.classList.toggle('farmer',farmer);var wm=R('[name=wmode]').value;if(root._wm!==wm){root._wm=wm;R('[name=fwu]').innerHTML=wm==='tot'?'<option value="kg">kg</option><option value="q">quintal</option>':'<option value="kg">kg</option><option value="g">grams</option>';R('[name=fw]').placeholder=wm==='tot'?'e.g. 2100':'e.g. 2.2'}[].forEach.call(root.querySelectorAll('.pt-mode button'),function(bt){bt.classList.toggle('on',bt.getAttribute('data-a')===(farmer?'farmer':'company'))});
 function m(x){return (x<0?'-':'')+cu[0]+nf(Math.abs(x),Math.abs(x)>=1000?0:2,cu[1])}function pc(x){return nf(x,1,'en-US')+'%'}
 var n=g(R,'n'),died=z(g(R,'died')),days=g(R,'days'),feed=g(R,'feed'),chick=g(R,'chick'),med=z(g(R,'med')),lab=z(g(R,'lab')),elec=z(g(R,'elec')),lit=z(g(R,'lit')),oth=z(g(R,'oth')),fk=g(R,'fk');
-var own=0,rentC=0,extra=0,tw=g(R,'tw');
-if(farmer){var dd=days>0?days:0,nn=n>0?n:0,cr=g(R,'cr'),fb=g(R,'fb'),fbw=g(R,'fbw'),fr=g(R,'fr');chick=isNaN(cr)?NaN:cr*nn;feed=(isNaN(fb)||isNaN(fr))?NaN:fb*fr;fk=(fb>0&&fbw>0)?fb*fbw:NaN;med=z(g(R,'fmed'));lit=z(g(R,'flit'));elec=z(g(R,'felec'));lab=z(g(R,'flab'));oth=z(g(R,'foth'));own=z(g(R,'own'))*dd/30;rentC=z(g(R,'rent'))*dd/30;extra=z(g(R,'man'))+z(g(R,'bagi'))}
+var own=0,rentC=0,extra=0,tw=NaN,fExtra=[];
+if(farmer){var dd=days>0?days:0,nn=n>0?n:0,cr=g(R,'cr'),fb=g(R,'fb'),fbw=g(R,'fbw'),fr=g(R,'fr');chick=isNaN(cr)?NaN:cr*nn;feed=(isNaN(fb)||isNaN(fr))?NaN:fb*fr;fk=(fb>0&&fbw>0)?fb*fbw:NaN;med=z(g(R,'fmed'));lit=z(g(R,'flit'));elec=z(g(R,'felec'));lab=z(g(R,'flab'));oth=z(g(R,'foth'));own=z(g(R,'own'))*dd/30;rentC=z(g(R,'rent'))*dd/30;extra=z(g(R,'man'))+z(g(R,'bagi'));var wmode=R('[name=wmode]').value,fw=g(R,'fw'),fwu=R('[name=fwu]').value,fp1=g(R,'fp1'),fpu=R('[name=fpu]').value,lb1=g(R,'lb1'),lb2=z(g(R,'lb2')),lb3=z(g(R,'lb3')),fp2=g(R,'fp2'),fp3=g(R,'fp3')}
 var miss=[];if(!(n>0))miss.push('number of birds');if(!(days>0))miss.push('cycle days');
 var w=g(R,'w'),p=g(R,'p'),prod=g(R,'prod'),eggsIn=g(R,'eggs'),ep=g(R,'ep'),cull=z(g(R,'cull'));
-if(layer){if(!(prod>0)&&!(eggsIn>0))miss.push('egg production % or total eggs');if(!(ep>0))miss.push('egg price')}else{if(!(w>0)&&!(farmer&&tw>0))miss.push(farmer?'average weight or total weight sold':'average weight');if(!(p>0))miss.push('selling price')}
+if(layer){if(!(prod>0)&&!(eggsIn>0))miss.push('egg production % or total eggs');if(!(ep>0))miss.push('egg price')}else{if(farmer){if(!(fw>0))miss.push(wmode==='tot'?'total weight sold':'average weight');if(!(fp1>0))miss.push('selling rate')}else{if(!(w>0))miss.push('average weight');if(!(p>0))miss.push('selling price')}}
 if(isNaN(feed))miss.push(farmer?'feed bags and rate per bag':'feed cost');if(isNaN(chick))miss.push(farmer?'chick rate':'chick / bird cost');
 if(miss.length){out.innerHTML='<div class="ct-box"><b>Fill the fields marked * to see your profit</b>Still needed: '+esc(miss.join(', '))+'.</div>';return}
 if(died>n)throw new Error('Birds died cannot be more than birds placed.');
@@ -60,7 +62,20 @@ var costs=[['Feed',feed],['Chicks / birds',chick],['Medicine and vaccines',med],
 var sold=n-died,mort=died/n*100,rev,steps=[],lines=[];
 steps.push('Birds sold = '+nf(n,0)+' placed - '+nf(died,0)+' died = <b>'+nf(sold,0)+'</b> (mortality '+pc(mort)+')');
 var unitName,unitCost,unitProfit,beKg,beBird,liveKg=NaN,eggs=NaN,beEgg=NaN,cullRev=0,fcr=NaN;
-if(!layer){var wk=R('[name=wu]').value==='g'?w/1000:w;liveKg=sold*wk;if(farmer&&tw>0){liveKg=tw;wk=tw/sold}
+if(!layer&&farmer){if(!(sold>0))throw new Error('No birds are left to sell. Check the birds died.');var wk;
+if(wmode==='tot'){liveKg=fwu==='q'?fw*100:fw;wk=liveKg/sold;steps.push('Total weight sold = <b>'+nf(liveKg,1)+' kg</b> ('+nf(liveKg/100,2,'en-US')+' quintal); average weight = '+nf(liveKg,1)+' kg / '+nf(sold,0)+' birds = <b>'+nf(wk,3,'en-US')+' kg per bird</b>')}
+else{wk=fwu==='g'?fw/1000:fw;liveKg=sold*wk;steps.push('Total weight sold = '+nf(sold,0)+' birds x '+nf(wk,3,'en-US')+' kg = <b>'+nf(liveKg,1)+' kg</b> ('+nf(liveKg/100,2,'en-US')+' quintal)')}
+if((lb2>0&&!(fp2>0))||(lb3>0&&!(fp3>0)))throw new Error('Enter the selling rate for each lot that has birds.');
+var l2=lb2>0?lb2:0,l3=lb3>0?lb3:0,multi=l2>0||l3>0,l1=multi?(lb1>0?lb1:sold-l2-l3):sold;
+if(l1<0)throw new Error('Birds in Lot 2 and Lot 3 ('+nf(l2+l3,0)+') are more than the birds sold ('+nf(sold,0)+').');
+if(Math.abs(l1+l2+l3-sold)>0.5)throw new Error('Birds in all lots ('+nf(l1+l2+l3,0)+') must add up to the birds sold ('+nf(sold,0)+').');
+var lr=function(l,r){return fpu==='kg'?l*wk*r:l*r},r1=lr(l1,fp1),r2=l2>0?lr(l2,fp2):0,r3=l3>0?lr(l3,fp3):0;rev=r1+r2+r3;
+if(multi)steps.push('Lot 1 = '+nf(l1,0)+' birds at '+m(fp1)+' = '+m(r1)+(l2>0?'; Lot 2 = '+nf(l2,0)+' birds at '+m(fp2)+' = '+m(r2):'')+(l3>0?'; Lot 3 = '+nf(l3,0)+' birds at '+m(fp3)+' = '+m(r3):'')+'; revenue = <b>'+m(rev)+'</b>');
+else if(fpu==='kg')steps.push('Revenue = '+nf(liveKg,1)+' kg x '+m(fp1)+' per kg = <b>'+m(rev)+'</b>');else steps.push('Revenue = '+nf(sold,0)+' birds x '+m(fp1)+' per bird = <b>'+m(rev)+'</b>');
+fExtra.push(IT.stat('Total weight sold',nf(liveKg,1)+' kg ('+nf(liveKg/100,2,'en-US')+' quintal)'),IT.stat('Average weight per bird',nf(wk,3,'en-US')+' kg'));
+if(multi)fExtra.push(IT.stat('Average selling rate',m(fpu==='kg'?rev/liveKg:rev/sold)+(fpu==='kg'?' per kg':' per bird')));
+if(fk>0)fcr=fk/liveKg}
+else if(!layer){var wk=R('[name=wu]').value==='g'?w/1000:w;liveKg=sold*wk;
 if(R('[name=pu]').value==='kg'){rev=liveKg*p;steps.push('Total live weight = '+nf(sold,0)+' birds x '+nf(wk,3,'en-US')+' kg = <b>'+nf(liveKg,1)+' kg</b>');steps.push('Revenue = '+nf(liveKg,1)+' kg x '+m(p)+' per kg = <b>'+m(rev)+'</b>')}
 else{rev=sold*p;steps.push('Total live weight = '+nf(sold,0)+' birds x '+nf(wk,3,'en-US')+' kg = <b>'+nf(liveKg,1)+' kg</b>');steps.push('Revenue = '+nf(sold,0)+' birds x '+m(p)+' per bird = <b>'+m(rev)+'</b>')}
 if(fk>0)fcr=fk/liveKg}
@@ -75,7 +90,7 @@ var stats=[],S=IT.stat;stats.push(S('Total revenue',m(rev)));stats.push(S('Total
 stats.push(S('Mortality',pc(mort)));
 if(!layer){stats.push(S('Cost per bird sold',m(total/sold)));stats.push(S('Profit per bird sold',m(profit/sold)));stats.push(S('Cost per kg live weight',m(total/liveKg)));stats.push(S('Profit per kg',m(profit/liveKg)));if(!isNaN(fcr))stats.push(S('FCR',nf(fcr,2,'en-US')));if(days>0)stats.push(S('Profit per bird per day',m(profit/sold/days)))}
 else{stats.push(S('Total eggs',nf(eggs,0)));stats.push(S('Eggs per hen',nf(eggs/n,1,'en-US')));stats.push(S('Cost per egg',m((total-cullRev-extra)/eggs)));stats.push(S('Profit per hen',m(profit/n)))}
-if(own>0)stats.push(S('Profit before your own work',m(profit+own)));
+if(own>0)stats.push(S('Profit before your own work',m(profit+own)));fExtra.forEach(function(x){stats.push(x)});
 var be;if(!layer){be='To break even you must sell at <strong>'+m((total-extra)/liveKg)+' per kg</strong> live weight, or <strong>'+m((total-extra)/sold)+' per bird</strong>. Anything above this is profit.'}
 else{var bpe=(total-cullRev-extra)/eggs;be='To break even your eggs must sell at <strong>'+m(bpe)+' per egg</strong> (<strong>'+m(bpe*12)+' per dozen</strong>, <strong>'+m(bpe*100)+' per 100</strong>)'+(cullRev>0?', after counting the income from old hens':'')+'.'}
 var bar='<div class="ct-bar">'+costs.map(function(c,i){return c[1]>0?'<i style="width:'+(c[1]/total*100)+'%;background:'+COL[i]+'" title="'+esc(c[0])+'"></i>':''}).join('')+'</div><div class="pt-leg">'+costs.map(function(c,i){return c[1]>0?'<span><i style="background:'+COL[i]+'"></i>'+esc(c[0])+' '+pc(c[1]/total*100)+'</span>':''}).join('')+'</div>';
@@ -95,6 +110,11 @@ out.innerHTML='<div class="pt-res '+(good?'good':'bad')+'"><span>Net '+(good?'pr
 '<div class="ct-box"><b>How we calculated it</b><ol class="pt-w">'+steps.map(function(s){return '<li>'+s+'</li>'}).join('')+'</ol></div>'+
 '<div class="ct-box"><b>What this means</b><ul class="pt-tip">'+tips.map(function(t){return '<li>'+t+'</li>'}).join('')+'</ul></div>'+
 '<p class="ct-note">This is an estimate based on the numbers you entered. Use your own farm records for exact accounts. It does not include taxes, interest or the value of your own time unless you add them as costs.</p>';
+if(farmer){var sm=document.createElement('div');sm.className='ct-box';var sumTxt='You spent <b>'+m(total)+'</b> and earned <b>'+m(rev)+'</b>, so you made a <b>'+(good?'profit':'loss')+' of '+m(Math.abs(profit))+'</b>';
+if(!layer)sumTxt+=' ('+m(Math.abs(profit/sold))+' per bird, '+m(Math.abs(profit/liveKg))+' per kg). You got about <b>'+m((rev-extra)/liveKg)+' per kg</b> on average. To avoid a loss you needed <b>'+m((total-extra)/liveKg)+' per kg</b>.';else sumTxt+=' ('+m(Math.abs(profit/n))+' per hen placed). To avoid a loss your eggs needed to sell at <b>'+m(bpe)+' per egg</b>.';
+sm.innerHTML='<b>In simple words</b>'+sumTxt;var heroEl=out.querySelector('.pt-res');heroEl.parentNode.insertBefore(sm,heroEl.nextSibling);
+var stepsEl=null;[].forEach.call(out.querySelectorAll('.ct-box'),function(bx){if(bx.firstChild&&bx.firstChild.textContent==='How we calculated it')stepsEl=bx});
+var gridEl=out.querySelector('.ct-grid'),noteEl=out.querySelector('.ct-note');if(gridEl&&stepsEl&&noteEl){var dt=document.createElement('details');dt.className='pt-more';dt.innerHTML='<summary>More details: all numbers and calculation steps</summary>';dt.appendChild(gridEl);dt.appendChild(stepsEl);out.insertBefore(dt,noteEl)}}
 var plain=function(s){return s.replace(/<[^>]+>/g,'')};
 root._txt='Poultry profit calculation\n'+steps.map(function(s){return plain(s)}).join('\n')+'\nProfit margin: '+(isNaN(margin)?'-':pc(margin))+'\nROI: '+(isNaN(roi)?'-':pc(roi))+'\n'+plain(be)+'\nCalculated at toolsxyz.in'}});
 /* ---------- FCR Calculator ---------- */
