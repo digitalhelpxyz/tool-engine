@@ -1,5 +1,3 @@
-/* ToolsXYZ photo pack v6 notice: licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). Source: https://github.com/digitalhelpxyz/tool-engine . The High quality cutout uses @imgly/background-removal (AGPL-3.0). */
-/* tool-engine photo pack v6: Passport Photo Maker and Background Remover (imgly AI cutout, runs fully in the browser). Needs the template core (window.IT). */
 (function(){
 var IT=window.IT;if(!IT||!IT.u||IT.photoPack)return;IT.photoPack=1;
 var U=IT.u,mk=U.mk,blob=U.blob,kb=U.kb;
