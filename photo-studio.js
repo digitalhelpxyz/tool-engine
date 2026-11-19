@@ -1,11 +1,11 @@
-/* ToolsXYZ Photo Studio v2.2
+/* ToolsXYZ Photo Studio v2.3
  * Passport Photo Maker (3 steps) and Background Remover (tabbed editor). Runs in the browser; photos are not uploaded to our server.
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). Source: https://github.com/digitalhelpxyz/tool-engine
  * AI background removal uses @imgly/background-removal 1.7.0 (AGPL-3.0, https://github.com/imgly/background-removal-js), loaded from jsDelivr when the user clicks "Remove background".
  * Use: <div data-photo-studio="passport"></div> or <div data-photo-studio="background"></div>, then include this file.
  */
 (function(){'use strict';
-var D=document,PI=Math.PI;
+var D=document,PI=Math.PI,DEBUG=/tpdebug/.test(location.hash+location.search);
 function $(r,s){return r.querySelector(s)}
 function $$(r,s){return [].slice.call(r.querySelectorAll(s))}
 function cv(w,h){var c=D.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));return c}
@@ -158,7 +158,7 @@ try{return await f(b,o)}catch(e1){try{o.publicPath=DATA;return await f(b,o)}catc
 function showLd(){ld.hidden=false}
 async function runAI(){if(S.busy||!S.src)return;S.busy=1;showLd();
 try{var inp=await blobOf(S.src,'image/png',1),out=await aiRemove(inp,function(){}),im=await imgOf(out),r=cv(S.src.width,S.src.height);r.getContext('2d').drawImage(im,0,0,r.width,r.height);S.aiRes=r;S.ai=1;rebuild();commit();say('Background removed. Use Brush to touch up the edges if needed.')}
-catch(e){console.error(e);say(P?'Could not remove the background. Check your internet, then open Brush and tap Remove again.':'Could not remove the background. Check your internet and tap Remove background again.',1)}
+catch(e){console.error(e);say((P?'Could not remove the background. Check your internet, then open Brush and tap Remove again.':'Could not remove the background. Check your internet and tap Remove background again.')+(DEBUG?' ['+(e&&e.message||e)+']':''),1)}
 finally{ld.hidden=true;S.busy=0;render()}}
 
 /* ---- load photo ---- */
