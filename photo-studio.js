@@ -151,10 +151,10 @@ var zm=R('zm');if(zm)zm.value=Math.round(zoomOf()*100);render()});
 function ce(){if(drag){drag=null;commit();render()}}cropEl.addEventListener('pointerup',ce);cropEl.addEventListener('pointercancel',ce)}
 
 /* ---- AI ---- */
-var MODS=['https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm','https://esm.sh/@imgly/background-removal@1.7.0'],DATA='https://cdn.jsdelivr.net/npm/@imgly/background-removal-data@1.7.0/dist/';
+var MODS=['https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm','https://esm.sh/@imgly/background-removal@1.7.0'];
 function aiMod(){if(!aiMod.p)aiMod.p=(async function(){var e,i;for(i=0;i<MODS.length;i++){try{var m=await import(MODS[i]),f=m.default||m.removeBackground;if(typeof f==='function')return f}catch(x){e=x}}throw e||new Error('engine')})().catch(function(e){aiMod.p=null;throw e});return aiMod.p}
 async function aiRemove(b,cb){if(window.TXPS_AI)return window.TXPS_AI(b,cb);var f=await aiMod(),o={model:'isnet_fp16',output:{format:'image/png',quality:1,type:'foreground'},progress:cb};
-try{return await f(b,o)}catch(e1){try{o.publicPath=DATA;return await f(b,o)}catch(e2){await new Promise(function(r){setTimeout(r,1200)});delete o.publicPath;return await f(b,o)}}}
+try{return await f(b,o)}catch(e1){await new Promise(function(r){setTimeout(r,1500)});try{return await f(b,o)}catch(e2){o.model='isnet_quint8';return await f(b,o)}}}
 function showLd(){ld.hidden=false}
 async function runAI(){if(S.busy||!S.src)return;S.busy=1;showLd();
 try{var inp=await blobOf(S.src,'image/png',1),out=await aiRemove(inp,function(){}),im=await imgOf(out),r=cv(S.src.width,S.src.height);r.getContext('2d').drawImage(im,0,0,r.width,r.height);S.aiRes=r;S.ai=1;rebuild();commit();say('Background removed. Use Brush to touch up the edges if needed.')}
