@@ -1,4 +1,4 @@
-/* ToolsXYZ Photo Studio v2.4
+/* ToolsXYZ Photo Studio v2.5
  * Passport Photo Maker (3 steps) and Background Remover (tabbed editor). Runs in the browser; photos are not uploaded to our server.
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). Source: https://github.com/digitalhelpxyz/tool-engine
  * AI background removal uses @imgly/background-removal 1.7.0 (AGPL-3.0, https://github.com/imgly/background-removal-js), loaded from jsDelivr when the user clicks "Remove background".
@@ -67,10 +67,10 @@ var dpiSel='<label class="tp-f">Resolution<select name="dpi"><option value="300"
 kbIn=function(ph){return '<label class="tp-f">Max KB <small>(optional)</small><input type="number" name="kb" min="5" placeholder="'+ph+'"></label>'};
 var pnP=
 '<div class="tp-pn" data-p="1">'+dk([['size','&#9645;','Size<small class="tp-sl"></small>'],['tab-rot','&#8635;','Rotate'],['tab-zoom','&#8853;','Zoom'],['fx','&#8651;','Flip']])+'<div class="tp-trays">'+tr('rot',rc(rg('rf','Straighten',-45,45,0.5,0),bt('rl','&#8634; 90'),bt('rr','90 &#8635;')))+tr('zoom',rg('zm','Zoom (or pinch the frame corners)',100,400,1,100))+'</div><div class="tp-act">'+bt('next','Next: Background &rarr;','p')+'</div></div>'+
-'<div class="tp-pn" data-p="2" hidden>'+dk([['tab-bgc','&#9724;','Color'],['tab-adj','&#9728;','Adjust'],['tab-brush','&#9998;','Brush']])+'<div class="tp-trays">'+tr('bgc','<div class="tp-f"><span>Background color</span>'+sw(0)+'</div>')+tr('adj',rc(rg('br','Brightness',60,140,1,100),rg('ct','Contrast',60,140,1,100)))+tr('brush',rc(bt('bm-e','Erase','on'),bt('bm-r','Restore'),bt('ai','Remove again'))+rc(bt('kc','Keep clothes: On','on'))+rg('bs','Brush size',8,90,1,30))+'</div><div class="tp-act">'+bt('back','&larr; Back')+bt('next','Next: Download &rarr;','p')+'</div></div>'+
+'<div class="tp-pn" data-p="2" hidden>'+dk([['tab-bgc','&#9724;','Color'],['tab-adj','&#9728;','Adjust'],['tab-brush','&#9998;','Brush']])+'<div class="tp-trays">'+tr('bgc','<div class="tp-f"><span>Background color</span>'+sw(0)+'</div>')+tr('adj',rc(rg('br','Brightness',60,140,1,100),rg('ct','Contrast',60,140,1,100)))+tr('brush',rc(bt('bm-e','Erase','on'),bt('bm-r','Restore'),bt('ai','Remove again'))+rg('bs','Brush size',8,90,1,30))+'</div><div class="tp-act">'+bt('back','&larr; Back')+bt('next','Next: Download &rarr;','p')+'</div></div>'+
 '<div class="tp-pn" data-p="3" hidden>'+dk([['tab-dl','&#11015;','Download'],['tab-sheet','&#9638;','Print sheet'],['tab-share','&#8599;','Share']])+'<div class="tp-trays">'+tr('dl',rc(dpiSel,kbIn('e.g. 100'))+rc(bt('dl-jpg','JPG','p'),bt('dl-png','PNG'),bt('dl-pdf','PDF')))+tr('sheet',rc('<label class="tp-f">Paper<select name="paper"><option value="4x6">4 x 6 inch</option><option value="5x7">5 x 7 inch</option><option value="a4">A4</option><option value="letter">Letter</option></select></label>','<label class="tp-f">Copies<input type="number" name="cp" min="1" max="60" placeholder="Auto"></label>')+rc('<label class="tp-f tp-ck"><input type="checkbox" name="cl" checked> Cut lines</label>',bt('sheet','Generate sheet','p')))+tr('share',share())+'</div><div class="tp-act">'+bt('back','&larr; Back to edit')+'</div></div>';
 var pnB='<div class="tp-pn" data-p="b">'+dk([['tab-remove','&#10022;','Remove'],['tab-brush','&#9998;','Brush'],['tab-crop','&#9974;','Crop'],['tab-rotate','&#8635;','Rotate'],['tab-adj','&#9728;','Adjust'],['tab-color','&#9724;','Color'],['tab-save','&#11015;','Save']])+'<div class="tp-trays">'+
-tr('remove',rc(bt('ai','&#10022; Remove background with AI','p'),bt('cmp','Hold: see original'))+rc(bt('kc','Keep clothes: Off')))+
+tr('remove',rc(bt('ai','&#10022; Remove background with AI','p'),bt('cmp','Hold: see original')))+
 tr('brush',rc(bt('bm-e','Erase','on'),bt('bm-r','Restore'))+rg('bs','Brush size',8,90,1,30))+
 tr('crop',rc('<label class="tp-f">Crop shape<select name="asp">'+ASP.map(function(a){return '<option value="'+a[0]+'">'+a[1]+'</option>'}).join('')+'</select></label>',bt('rcrop','Reset crop')))+
 tr('rotate',rg('rf','Straighten',-45,45,0.5,0)+rc(bt('rl','&#8634; 90'),bt('rr','90 &#8635;'),bt('fx','Flip &#8596;'),bt('fy','Flip &#8597;')))+
@@ -90,7 +90,7 @@ D.body.appendChild(mdl);
 var msg=$(root,'.tp-msg'),app=$(root,'.tp-app'),pick=$(root,'.tp-pick'),vA=$(root,'[data-v=a]'),vB=$(root,'[data-v=b]'),cvA=$(vA,'canvas'),cvB=vB&&$(vB,'canvas'),cropEl=$(vA,'.tp-crop'),ld=$(root,'.tp-ld');
 function R(n){return $(root,'[name='+n+']')}
 function say(t,e){msg.textContent=t;msg.className='tp-msg'+(e?' err':'')}
-var S={src:null,aiRes:null,aiFix:null,kc:P?1:0,ba:0,cut:null,strokes:[],si:0,rq:0,rf:0,fx:0,fy:0,crop:{x:0,y:0,w:1,h:1},asp:0,br:100,ct:100,bg:P?'#ffffff':'',ai:0,sz:'0',cw:35,ch:45,cu:'mm',step:1,tab:'remove',bm:'e',bs:30,hist:[],hi:-1,cmp:0,cur:null,busy:0,name:'photo',final:null,sheet:null};
+var S={src:null,aiRes:null,ba:0,cut:null,strokes:[],si:0,rq:0,rf:0,fx:0,fy:0,crop:{x:0,y:0,w:1,h:1},asp:0,br:100,ct:100,bg:P?'#ffffff':'',ai:0,sz:'0',cw:35,ch:45,cu:'mm',step:1,tab:'remove',bm:'e',bs:30,hist:[],hi:-1,cmp:0,cur:null,busy:0,name:'photo',final:null,sheet:null};
 
 /* ---- geometry ---- */
 function RD(){var a=(S.rq*90+S.rf)*PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),w=S.src.width,h=S.src.height;return{w:w*c+h*s,h:w*s+h*c}}
@@ -116,20 +116,20 @@ btns()}
 function btns(){var u=$(root,'[data-a=undo]'),r=$(root,'[data-a=redo]');u.disabled=S.hi<=0;r.disabled=S.hi>=S.hist.length-1}
 
 /* ---- history ---- */
-function snap(){return JSON.stringify({rq:S.rq,rf:S.rf,fx:S.fx,fy:S.fy,crop:S.crop,asp:S.asp,br:S.br,ct:S.ct,bg:S.bg,ai:S.ai,kc:S.kc,si:S.si,sz:S.sz,cw:S.cw,ch:S.ch,cu:S.cu})}
+function snap(){return JSON.stringify({rq:S.rq,rf:S.rf,fx:S.fx,fy:S.fy,crop:S.crop,asp:S.asp,br:S.br,ct:S.ct,bg:S.bg,ai:S.ai,si:S.si,sz:S.sz,cw:S.cw,ch:S.ch,cu:S.cu})}
 function commit(){var s=snap();if(S.hist[S.hi]===s)return;S.hist=S.hist.slice(0,S.hi+1);S.hist.push(s);if(S.hist.length>80)S.hist.shift();S.hi=S.hist.length-1}
 function resetHist(){S.hist=[snap()];S.hi=0}
 function restore(s){var o=JSON.parse(s),k;for(k in o)S[k]=o[k];rebuild();sync();render()}
 function undo(){if(S.hi>0){S.hi--;restore(S.hist[S.hi])}}
 function redo(){if(S.hi<S.hist.length-1){S.hi++;restore(S.hist[S.hi])}}
-function sync(){syncKc();var m={rf:S.rf,br:S.br,ct:S.ct,sz:S.sz,cw:S.cw,ch:S.ch,cu:S.cu};$$(root,'[name]').forEach(function(e){var n=e.getAttribute('name');if(n in m)e.value=m[n]});$$(root,'[name=zm]').forEach(function(e){e.value=Math.round(zoomOf()*100)});$$(root,'[name=asp]').forEach(function(e){var best='0',d=1e9;ASP.forEach(function(a){var v=Math.abs(+a[0]-S.asp);if(v<d){d=v;best=a[0]}});e.value=best});
+function sync(){var m={rf:S.rf,br:S.br,ct:S.ct,sz:S.sz,cw:S.cw,ch:S.ch,cu:S.cu};$$(root,'[name]').forEach(function(e){var n=e.getAttribute('name');if(n in m)e.value=m[n]});$$(root,'[name=zm]').forEach(function(e){e.value=Math.round(zoomOf()*100)});$$(root,'[name=asp]').forEach(function(e){var best='0',d=1e9;ASP.forEach(function(a){var v=Math.abs(+a[0]-S.asp);if(v<d){d=v;best=a[0]}});e.value=best});
 $$(root,'[data-bg]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-bg')===(S.bg||''))});$$(root,'.tp-sl').forEach(function(e){var m=szMM();e.textContent=(Math.round(m[0]*10)/10)+' x '+(Math.round(m[1]*10)/10)+' mm'})}
 
 /* ---- brush layer ---- */
 function seg(c,st,i){var p=st.p,x=c.getContext('2d'),x1=p[2*i],y1=p[2*i+1],x0=i?p[2*i-2]:x1,y0=i?p[2*i-1]:y1,s=st.s;
 if(st.m==='e'){x.save();x.globalCompositeOperation='destination-out';x.lineCap=x.lineJoin='round';x.lineWidth=s;x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke();x.restore()}
 else{var d=Math.hypot(x1-x0,y1-y0),n=Math.max(1,Math.ceil(d/(s/4))),k;for(k=1;k<=n;k++){x.save();x.beginPath();x.arc(x0+(x1-x0)*k/n,y0+(y1-y0)*k/n,s/2,0,PI*2);x.clip();x.drawImage(S.src,0,0);x.restore()}}}
-function rebuild(){if(!S.src)return;var b=S.ai&&S.aiRes?(S.kc&&S.aiFix?S.aiFix:S.aiRes):S.src,c=cv(b.width,b.height),j,i;c.getContext('2d').drawImage(b,0,0);S.cut=c;for(j=0;j<S.si;j++){var st=S.strokes[j];for(i=0;i<st.p.length/2;i++)seg(c,st,i)}}
+function rebuild(){if(!S.src)return;var b=S.ai&&S.aiRes?S.aiRes:S.src,c=cv(b.width,b.height),j,i;c.getContext('2d').drawImage(b,0,0);S.cut=c;for(j=0;j<S.si;j++){var st=S.strokes[j];for(i=0;i<st.p.length/2;i++)seg(c,st,i)}}
 function isBrush(){return P?(S.step===2&&S.tab==='brush'):S.tab==='brush'}
 function brushCv(){return isBrush()&&!S.ba?cvA:null}
 function toSrc(c,e){var r=c.getBoundingClientRect(),u=(e.clientX-r.left)/r.width,v=(e.clientY-r.top)/r.height,d=RD(),X=(S.crop.x+u*S.crop.w)*d.w-d.w/2,Y=(S.crop.y+v*S.crop.h)*d.h-d.h/2,a=(S.rq*90+S.rf)*PI/180,cs=Math.cos(a),sn=Math.sin(a),x=X*cs+Y*sn,y=-X*sn+Y*cs;if(S.fx)x=-x;if(S.fy)y=-y;return[x+S.src.width/2,y+S.src.height/2,d.w*S.crop.w/r.width]}
@@ -152,46 +152,20 @@ var zm=R('zm');if(zm)zm.value=Math.round(zoomOf()*100);render()});
 function ce(){if(drag){drag=null;commit();render()}}cropEl.addEventListener('pointerup',ce);cropEl.addEventListener('pointercancel',ce)}
 
 /* ---- AI ---- */
-var MODS=['https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm','https://esm.sh/@imgly/background-removal@1.7.0'];
-function aiMod(){if(!aiMod.p)aiMod.p=(async function(){var e,i;for(i=0;i<MODS.length;i++){try{var m=await import(MODS[i]),f=m.default||m.removeBackground;if(typeof f==='function')return f}catch(x){e=x}}throw e||new Error('engine')})().catch(function(e){aiMod.p=null;throw e});return aiMod.p}
-async function aiRemove(b,cb){if(window.TXPS_AI)return window.TXPS_AI(b,cb);var f=await aiMod(),o={model:'isnet_fp16',output:{format:'image/png',quality:1,type:'foreground'},progress:cb};
-try{return await f(b,o)}catch(e1){await new Promise(function(r){setTimeout(r,1500)});try{return await f(b,o)}catch(e2){o.model='isnet_quint8';return await f(b,o)}}}
-/* keep clothes: add large areas that a person mask sees but the AI cutout lost (thin halos are ignored) */
-function unionLarge(a,m,w,h){
-var sc=Math.min(1,256/Math.max(w,h)),sw=Math.max(8,Math.round(w*sc)),sh=Math.max(8,Math.round(h*sc)),n=sw*sh,A=new Uint8Array(n),M=new Uint8Array(n),i,x,y;
-for(y=0;y<sh;y++)for(x=0;x<sw;x++){var sx=Math.min(w-1,Math.floor((x+.5)/sc)),sy=Math.min(h-1,Math.floor((y+.5)/sc)),k=sy*w+sx;A[y*sw+x]=a[k]>.5?1:0;M[y*sw+x]=m[k]>.6?1:0}
-function er(S,r){var T=S,j,u,v,o;for(j=0;j<r;j++){o=new Uint8Array(n);for(v=1;v<sh-1;v++)for(u=1;u<sw-1;u++){var q=v*sw+u;o[q]=T[q]&&T[q-1]&&T[q+1]&&T[q-sw]&&T[q+sw]?1:0}T=o}return T}
-function di(S,r){var T=S,j,u,v,o;for(j=0;j<r;j++){o=new Uint8Array(n);for(v=0;v<sh;v++)for(u=0;u<sw;u++){var q=v*sw+u;o[q]=T[q]||(u>0&&T[q-1])||(u<sw-1&&T[q+1])||(v>0&&T[q-sw])||(v<sh-1&&T[q+sw])?1:0}T=o}return T}
-M=er(M,1);var D=new Uint8Array(n);for(i=0;i<n;i++)D[i]=M[i]&&!A[i]?1:0;
-var r=Math.max(2,Math.round(Math.min(sw,sh)*.035)),E=di(er(D,r),r+1),F=new Float32Array(n),cnt=0;
-for(i=0;i<n;i++){E[i]=E[i]&&D[i]?1:0;cnt+=E[i]}
-if(!cnt)return a;
-for(y=0;y<sh;y++)for(x=0;x<sw;x++){var s=0,c=0,dx,dy;for(dy=-1;dy<=1;dy++)for(dx=-1;dx<=1;dx++){var xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<sw&&yy<sh){s+=E[yy*sw+xx];c++}}F[y*sw+x]=s/c}
-var out=new Float32Array(w*h);
-for(y=0;y<h;y++){var fy=Math.min(sh-1,Math.max(0,y*sc-.5)),y0=Math.floor(fy),y1=Math.min(sh-1,y0+1),ty=fy-y0;
-for(x=0;x<w;x++){var fx=Math.min(sw-1,Math.max(0,x*sc-.5)),x0=Math.floor(fx),x1=Math.min(sw-1,x0+1),tx=fx-x0,v=(F[y0*sw+x0]*(1-tx)+F[y0*sw+x1]*tx)*(1-ty)+(F[y1*sw+x0]*(1-tx)+F[y1*sw+x1]*tx)*ty,k=y*w+x;out[k]=Math.max(a[k],v)}}
-return out}
-function tmo(p,ms){return Promise.race([p,new Promise(function(_,no){setTimeout(function(){no(new Error('timeout'))},ms)})])}
-var MPH=['https://cdn.jsdelivr.net/npm/','https://fastly.jsdelivr.net/npm/','https://unpkg.com/'],MPP='@mediapipe/selfie_segmentation@0.1.1675465747/';
-function mpLoad(){if(mpLoad.p)return mpLoad.p;var i=0;function nxt(){if(i>=MPH.length){mpLoad.p=null;return Promise.reject(new Error('mp'))}var base=MPH[i++]+MPP;
-return (window.SelfieSegmentation?Promise.resolve():new Promise(function(ok,no){var sc=D.createElement('script');sc.src=base+'selfie_segmentation.js';sc.async=true;sc.onload=ok;sc.onerror=function(){sc.remove();no(new Error('s'))};D.head.appendChild(sc)})).then(function(){var ss=new window.SelfieSegmentation({locateFile:function(f){return base+f}});ss.setOptions({modelSelection:0});return ss.initialize().then(function(){return ss})}).catch(nxt)}
-mpLoad.p=nxt();return mpLoad.p}
-function mpMask(c){return tmo(mpLoad(),60000).then(function(ss){return tmo(new Promise(function(ok,no){ss.onResults(function(r){try{var t=cv(c.width,c.height),x=t.getContext('2d',{willReadFrequently:true});x.drawImage(r.segmentationMask,0,0,t.width,t.height);var d=x.getImageData(0,0,t.width,t.height).data,p=new Float32Array(t.width*t.height),i;for(i=0;i<p.length;i++)p[i]=d[4*i]/255;ok(p)}catch(e){no(e)}});ss.send({image:c}).catch(no)}),60000)})}
-async function mkFix(){if(!S.aiRes)return;try{var w=S.src.width,h=S.src.height,a=S.aiRes.getContext('2d').getImageData(0,0,w,h).data,al=new Float32Array(w*h),i;for(i=0;i<al.length;i++)al[i]=a[4*i+3]/255;
-var u=unionLarge(al,await mpMask(S.src),w,h),f=cv(w,h),fx=f.getContext('2d'),fd=fx.createImageData(w,h),sd=S.src.getContext('2d').getImageData(0,0,w,h).data;
-for(i=0;i<al.length;i++){var k=4*i;if(u[i]>al[i]+.01){fd.data[k]=sd[k];fd.data[k+1]=sd[k+1];fd.data[k+2]=sd[k+2];fd.data[k+3]=Math.round(u[i]*255)}else{fd.data[k]=a[k];fd.data[k+1]=a[k+1];fd.data[k+2]=a[k+2];fd.data[k+3]=a[k+3]}}
-fx.putImageData(fd,0,0);S.aiFix=f}catch(e){S.aiFix=null;console.error(e);say('Could not load the clothes helper. Check your internet and try again, or use the brush.',1)}}
-function syncKc(){$$(root,'[data-a=kc]').forEach(function(b){b.textContent='Keep clothes: '+(S.kc?'On':'Off');b.classList.toggle('on',!!S.kc)})}
+var IMGLY='https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm';
+function aiRemove(b,cb){if(window.TXPS_AI)return window.TXPS_AI(b,cb);
+if(!aiRemove.p)aiRemove.p=import(IMGLY).catch(function(e){aiRemove.p=null;throw e});
+return aiRemove.p.then(function(m){var f=m.default||m.removeBackground;if(typeof f!=='function')throw new Error('Background-removal engine could not start.');return f(b,{model:'isnet_fp16',output:{format:'image/png',quality:1,type:'foreground'},progress:function(k,c,t){cb&&cb(k,c,t)}})})}
 function showLd(){ld.hidden=false}
 async function runAI(){if(S.busy||!S.src)return;S.busy=1;showLd();
-try{var inp=await blobOf(S.src,'image/png',1),out=await aiRemove(inp,function(){}),im=await imgOf(out),r=cv(S.src.width,S.src.height);r.getContext('2d').drawImage(im,0,0,r.width,r.height);S.aiRes=r;S.aiFix=null;if(S.kc)await mkFix();S.ai=1;rebuild();commit();say('Background removed. Use Brush to touch up the edges if needed.')}
+try{var inp=await blobOf(S.src,'image/png',1),out=await aiRemove(inp,function(){}),im=await imgOf(out),r=cv(S.src.width,S.src.height);r.getContext('2d').drawImage(im,0,0,r.width,r.height);S.aiRes=r;S.ai=1;rebuild();commit();say('Background removed. Use Brush to touch up the edges if needed.')}
 catch(e){console.error(e);say((P?'Could not remove the background. Check your internet, then open Brush and tap Remove again.':'Could not remove the background. Check your internet and tap Remove background again.')+(DEBUG?' ['+(e&&e.message||e)+']':''),1)}
 finally{ld.hidden=true;S.busy=0;render()}}
 
 /* ---- load photo ---- */
 async function load(f){if(!f)return;if(!/^image\//.test(f.type))return say('Please choose a JPG, PNG or WebP image.',1);if(f.size>25*1024*1024)return say('Please choose an image smaller than 25 MB.',1);
 try{say('Loading photo...');var im=await imgOf(f),nw=im.naturalWidth||im.width,nh=im.naturalHeight||im.height,m=Math.min(1,MAXD/Math.max(nw,nh));
-S.src=cv(nw*m,nh*m);S.src.getContext('2d').drawImage(im,0,0,S.src.width,S.src.height);S.aiRes=null;S.aiFix=null;S.ba=0;S.kc=P?1:0;S.strokes=[];S.si=0;S.rq=0;S.rf=0;S.fx=0;S.fy=0;S.br=100;S.ct=100;S.bg=P?'#ffffff':'';S.ai=0;S.crop={x:0,y:0,w:1,h:1};S.final=null;S.sheet=null;S.name=(f.name||'photo').replace(/\.[^.]+$/,'')||'photo';
+S.src=cv(nw*m,nh*m);S.src.getContext('2d').drawImage(im,0,0,S.src.width,S.src.height);S.aiRes=null;S.ba=0;S.strokes=[];S.si=0;S.rq=0;S.rf=0;S.fx=0;S.fy=0;S.br=100;S.ct=100;S.bg=P?'#ffffff':'';S.ai=0;S.crop={x:0,y:0,w:1,h:1};S.final=null;S.sheet=null;S.name=(f.name||'photo').replace(/\.[^.]+$/,'')||'photo';
 if(P){S.sz='0';S.step=1;var z=szMM();S.asp=z[0]/z[1];S.crop=fitRect(1)}else{S.asp=0;S.tab='remove'}
 rebuild();pick.hidden=true;app.hidden=false;if(P)go(1);else setTab('remove');resetHist();sync();render();say(P?'Photo loaded. Choose the size, then place the face inside the frame.':'Photo loaded. Click "Remove background with AI".')}
 catch(e){say(e.message||String(e),1)}}
@@ -244,7 +218,6 @@ else if(a==='rl'||a==='rr'){setRot(function(){S.rq=(S.rq+(a==='rl'?3:1))%4});com
 else if(a==='fx'||a==='fy'){S[a]=S[a]?0:1;commit();render()}
 else if(a==='rcrop'){S.asp=0;S.crop={x:0,y:0,w:1,h:1};sync();commit();render()}
 else if(a==='ai')await runAI();
-else if(a==='kc'){S.kc=S.kc?0:1;if(S.kc&&S.ai&&!S.aiFix){showLd();try{await mkFix()}finally{ld.hidden=true}}rebuild();commit();syncKc();render()}
 else if(a==='ba'){S.ba=S.ba?0:1;render()}
 else if(a==='bm-e')setBm('e');else if(a==='bm-r')setBm('r');
 else if(a.indexOf('tab-')===0)setTab(a.slice(4));
