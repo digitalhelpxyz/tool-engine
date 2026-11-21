@@ -1,5 +1,5 @@
-/* ToolsXYZ photo pack v8 notice: licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). Source: https://github.com/digitalhelpxyz/tool-engine . The High quality cutout uses @imgly/background-removal (AGPL-3.0). */
-/* tool-engine photo pack v8: Passport Photo Maker and Background Remover (imgly AI cutout, runs fully in the browser). Needs the template core (window.IT). */
+/* ToolsXYZ photo pack v9 notice: licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). Source: https://github.com/digitalhelpxyz/tool-engine . The High quality cutout uses @imgly/background-removal (AGPL-3.0). */
+/* tool-engine photo pack v9: Passport Photo Maker and Background Remover (imgly AI cutout, runs fully in the browser). Needs the template core (window.IT). */
 (function(){
 var IT=window.IT;if(!IT||!IT.u||IT.photoPack)return;IT.photoPack=1;
 var U=IT.u,mk=U.mk,blob=U.blob,kb=U.kb;
@@ -176,21 +176,6 @@ return y0<0?null:{x0:x0,x1:x1,y0:y0,y1:y1}};
 S.data=function(){return od};
 return S}
 
-/* keep clothes: add large areas that a person mask sees but the AI cutout lost (thin halos are ignored) */
-function unionLarge(a,m,w,h){
-var sc=Math.min(1,256/Math.max(w,h)),sw=Math.max(8,Math.round(w*sc)),sh=Math.max(8,Math.round(h*sc)),n=sw*sh,A=new Uint8Array(n),M=new Uint8Array(n),i,x,y;
-for(y=0;y<sh;y++)for(x=0;x<sw;x++){var sx=Math.min(w-1,Math.floor((x+.5)/sc)),sy=Math.min(h-1,Math.floor((y+.5)/sc)),k=sy*w+sx;A[y*sw+x]=a[k]>.5?1:0;M[y*sw+x]=m[k]>.6?1:0}
-function er(S,r){var T=S,j,u,v,o;for(j=0;j<r;j++){o=new Uint8Array(n);for(v=1;v<sh-1;v++)for(u=1;u<sw-1;u++){var q=v*sw+u;o[q]=T[q]&&T[q-1]&&T[q+1]&&T[q-sw]&&T[q+sw]?1:0}T=o}return T}
-function di(S,r){var T=S,j,u,v,o;for(j=0;j<r;j++){o=new Uint8Array(n);for(v=0;v<sh;v++)for(u=0;u<sw;u++){var q=v*sw+u;o[q]=T[q]||(u>0&&T[q-1])||(u<sw-1&&T[q+1])||(v>0&&T[q-sw])||(v<sh-1&&T[q+sw])?1:0}T=o}return T}
-M=er(M,1);var D=new Uint8Array(n);for(i=0;i<n;i++)D[i]=M[i]&&!A[i]?1:0;
-var r=Math.max(2,Math.round(Math.min(sw,sh)*.035)),E=di(er(D,r),r+1),F=new Float32Array(n),cnt=0;
-for(i=0;i<n;i++){E[i]=E[i]&&D[i]?1:0;cnt+=E[i]}
-if(!cnt)return a;
-for(y=0;y<sh;y++)for(x=0;x<sw;x++){var s=0,c=0,dx,dy;for(dy=-1;dy<=1;dy++)for(dx=-1;dx<=1;dx++){var xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<sw&&yy<sh){s+=E[yy*sw+xx];c++}}F[y*sw+x]=s/c}
-var out=new Float32Array(w*h);
-for(y=0;y<h;y++){var fy=Math.min(sh-1,Math.max(0,y*sc-.5)),y0=Math.floor(fy),y1=Math.min(sh-1,y0+1),ty=fy-y0;
-for(x=0;x<w;x++){var fx=Math.min(sw-1,Math.max(0,x*sc-.5)),x0=Math.floor(fx),x1=Math.min(sw-1,x0+1),tx=fx-x0,v=(F[y0*sw+x0]*(1-tx)+F[y0*sw+x1]*tx)*(1-ty)+(F[y1*sw+x0]*(1-tx)+F[y1*sw+x1]*tx)*ty,k=y*w+x;out[k]=Math.max(a[k],v)}}
-return out}
 /* ---------- AI person cutout: a small MediaPipe model that runs in the browser (about 6 MB, downloaded once) ---------- */
 var MP={prom:null,ss:null,hosts:['https://cdn.jsdelivr.net/npm/','https://fastly.jsdelivr.net/npm/','https://gcore.jsdelivr.net/npm/','https://unpkg.com/'],pkg:'@mediapipe/selfie_segmentation@0.1.1675465747/'};
 function mpScript(u){return new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.async=true;s.onload=ok;s.onerror=function(){s.remove();no(new Error('script'))};document.head.appendChild(s)})}
@@ -201,8 +186,8 @@ return (window.SelfieSegmentation?Promise.resolve():mpScript(base+'selfie_segmen
 MP.prom=tryHost();return MP.prom}
 function aiMask(c){return timeout(loadMP(),60000).then(function(ss){return timeout(new Promise(function(ok,no){ss.onResults(function(r){try{var m=r.segmentationMask,t=mk(c.width,c.height),x=t.getContext('2d',{willReadFrequently:true});x.drawImage(m,0,0,c.width,c.height);var d=x.getImageData(0,0,c.width,c.height).data,p=new Float32Array(c.width*c.height);for(var i=0;i<p.length;i++)p[i]=d[4*i]/255;ok(p)}catch(e){no(e)}});ss.send({image:c}).catch(no)}),60000)})}
 /* ---------- High quality cutout: @imgly/background-removal 1.7.0 (AGPL-3.0, https://github.com/imgly/background-removal-js), loaded from jsDelivr and run in the browser. The library saves its model files in the browser after the first download. ---------- */
-var DBG=/tpdebug/.test(location.hash+location.search),HQ={prom:null},HQM=['https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm','https://esm.sh/@imgly/background-removal@1.7.0'];
-function hqLib(){if(window.TXPS_AI)return Promise.resolve(window.TXPS_AI);if(!HQ.prom)HQ.prom=(async function(){var e,i;for(i=0;i<HQM.length;i++){try{var m=await import(HQM[i]),f=m.default||m.removeBackground;if(typeof f==='function')return async function(b,cb){var o={model:'isnet_fp16',output:{format:'image/png',quality:1,type:'foreground'},progress:cb};try{return await f(b,o)}catch(e1){await new Promise(function(r){setTimeout(r,1500)});try{return await f(b,o)}catch(e2){o.model='isnet_quint8';return await f(b,o)}}}}catch(x){e=x}}throw e||new Error('engine')})().catch(function(e){HQ.prom=null;throw e});return HQ.prom}
+var DBG=/tpdebug/.test(location.hash+location.search),HQ={prom:null};
+function hqLib(){if(window.TXPS_AI)return Promise.resolve(window.TXPS_AI);if(!HQ.prom)HQ.prom=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm').then(function(m){var f=m.default||m.removeBackground;if(typeof f!=='function')throw new Error('engine');return function(b,cb){return f(b,{model:'isnet_fp16',output:{format:'image/png',quality:1,type:'foreground'},progress:cb})}}).catch(function(e){HQ.prom=null;throw e});return HQ.prom}
 async function hqMask(c,prog){var W=c.width,H=c.height,i;prog(0,0,0,'init');var f=await hqLib(),blob=await new Promise(function(ok,no){c.toBlob(function(b){b?ok(b):no(new Error('export'))},'image/png')});
 var started=false,out=await timeout(f(blob,function(k,cur,tot){if(/fetch|download/i.test(String(k))&&tot>0&&cur<tot){started=true;prog(cur/tot,cur,tot)}else{prog(1,0,0,'run')}}),300000);
 var im=await new Promise(function(ok,no){var u=URL.createObjectURL(out),g=new Image();g.onload=function(){URL.revokeObjectURL(u);ok(g)};g.onerror=function(){URL.revokeObjectURL(u);no(new Error('decode'))};g.src=u});
@@ -211,10 +196,9 @@ var t=mk(W,H),x=t.getContext('2d',{willReadFrequently:true});x.imageSmoothingQua
 function tick(){return new Promise(function(r){setTimeout(r,30)})}
 async function cutBg(seg,o){var e=+o.edge,sh=Math.min(2,Math.round(e/1.5)),m=o.method,P=o.prog||function(){};
 function thrOf(){return clamp(.2+(o.first?30:+o.val())/100,.25,.8)}
-if(m==='hq'){try{if(seg.qm!=='hq'||seg.qc!==!!o.clothes){seg.q=null;
+if(m==='hq'){try{if(seg.qm!=='hq'){seg.q=null;
 var p=await hqMask(seg.src,function(f,got,total,ph){if(ph==='init')P('Step 1 of 3: starting the AI engine',null,'This takes a few seconds');else if(ph==='run')P('Step 2 of 3: finding the person in your photo',null,'Please wait, this can take some time on a phone');else P('Step 1 of 3: downloading the AI model (first time only)',f,Math.round(got/1048576)+' MB of '+Math.round(total/1048576)+' MB, then it is saved in your browser')});
-if(o.clothes){try{P('Step 2 of 3: finding the person in your photo',null,'');p=unionLarge(p,await aiMask(seg.src),seg.src.width,seg.src.height)}catch(x){}}
-P('Step 3 of 3: cleaning the edges',null,'');await tick();seg.prob(p);seg.qm='hq';seg.qc=!!o.clothes}
+P('Step 3 of 3: cleaning the edges',null,'');await tick();seg.prob(p);seg.qm='hq'}
 if(o.first)o.set(30);seg.ai({thr:thrOf(),feather:e,shrink:Math.max(sh,1)});return'hq'}catch(err){if(DBG){try{alert('AI error: '+(err&&err.message||err))}catch(x){}}if(o.fail)o.fail('Could not start the AI. The fast method was used.'+(DBG?' ['+(err&&err.message||err)+']':''));m='ai'}}
 if(m==='ai'){try{if(seg.qm!=='ai'){seg.q=null;P('Finding the person in your photo',null,'First time: a small AI model (about 6 MB) is downloaded');seg.prob(await aiMask(seg.src));seg.qm='ai'}if(o.first)o.set(30);P('Cleaning the edges',null,'');await tick();seg.ai({thr:thrOf(),feather:e,shrink:Math.max(sh,2)});return'ai'}catch(err){if(o.fail)o.fail('Could not start the AI. Plain removal was used.'+(DBG?' ['+(err&&err.message||err)+']':''))}}
 P('Removing background',null,'');await tick();var T=seg.auto({tol:o.first?0:+o.val(),feather:e,shrink:sh});if(o.first)o.set(Math.round(T));return'color'}
@@ -250,7 +234,7 @@ el.innerHTML='<div class="it-wrap pp"><label class="it-drop"><input type="file" 
 '<div class="pp-p" data-v="o"><div class="pp-dock"><button type="button" data-k="brush" class="on"><i>&#9998;</i>Brush</button><button type="button" data-k="color"><i>&#9724;</i>Color</button><button type="button" data-k="method"><i>&#9881;</i>Method</button></div>'+
 '<div class="pp-tr" data-k="brush"><div class="pp-tabs"><button type="button" data-m="erase" class="on">Erase</button><button type="button" data-m="restore">Restore</button><button type="button" data-m="pan">Pan</button></div><div class="pp-g2"><label>Brush size<input type="range" name="bs" min="8" max="90" value="34"></label><label>Zoom<input type="range" name="zm" min="100" max="400" value="100"></label></div></div>'+
 '<div class="pp-tr" data-k="color" hidden><div class="pp-sw"></div></div>'+
-'<div class="pp-tr" data-k="method" hidden><input type="range" name="tol" min="5" max="60" value="22" hidden><label>Method<select name="mt"><option value="hq">High quality (AI, downloads once)</option><option value="ai">Fast (AI, 6 MB)</option><option value="color">Plain background (color)</option></select></label><label>Edge smoothness<input type="range" name="edge" min="0" max="4" step="0.5" value="1"></label><label class="pp-chk"><input type="checkbox" name="kc"> Keep clothes (for photos of people)</label><div class="pp-btns"><button type="button" data-a="auto">Remove again</button></div></div>'+
+'<div class="pp-tr" data-k="method" hidden><input type="range" name="tol" min="5" max="60" value="22" hidden><label>Method<select name="mt"><option value="hq">High quality (AI, downloads once)</option><option value="ai">Fast (AI, 6 MB)</option><option value="color">Plain background (color)</option></select></label><label>Edge smoothness<input type="range" name="edge" min="0" max="4" step="0.5" value="1"></label><div class="pp-btns"><button type="button" data-a="auto">Remove again</button></div></div>'+
 '<div class="pp-btns"><button type="button" data-a="undo">Undo</button><button type="button" data-a="reset">Reset edits</button></div>'+
 '<div class="pp-g2"><label>Download as<select name="of"><option value="png">PNG (transparent)</option><option value="webp">WebP (transparent)</option><option value="jpg">JPG</option></select></label><div style="display:flex;align-items:end"><button type="button" class="it-b it-go" style="width:100%;padding:10px 4px;margin:0">Create image</button></div></div></div>'+
 '<div class="pp-p" data-v="r" hidden><div class="it-rl"></div><div class="pp-nav"><button type="button" class="it-b alt" data-b="1">&larr; Edit</button><button type="button" class="it-b" data-b="2">New photo</button></div></div>'+
@@ -262,7 +246,7 @@ swatches($(root,'.pp-sw'),true,function(c){st.bg=c;ST.bg(c)},null);
 function setMode(m){st.mode=m;$$(root,'.pp-tabs button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-m')===m)});if(st.seg)st.seg.canvas.style.touchAction=m==='pan'?'auto':'none';ST.ring(null)}
 function params(){var e=+R('edge').value;return{tol:+R('tol').value,feather:e,shrink:Math.min(2,Math.round(e/1.5))}}
 function runAuto(first){st.busy=true;var m=R('mt').value;ST.busy('Starting...',null,'');
-return new Promise(function(ok){setTimeout(async function(){var note='';try{await cutBg(st.seg,{method:m,first:first,clothes:!!(R('kc')&&R('kc').checked),edge:R('edge').value,val:function(){return R('tol').value},set:function(v){R('tol').value=v},prog:function(t,p,sub){ST.busy(t,p,sub)},fail:function(t){note=t}})}catch(e){}
+return new Promise(function(ok){setTimeout(async function(){var note='';try{await cutBg(st.seg,{method:m,first:first,edge:R('edge').value,val:function(){return R('tol').value},set:function(v){R('tol').value=v},prog:function(t,p,sub){ST.busy(t,p,sub)},fail:function(t){note=t}})}catch(e){}
 if(note){ST.busy(note,1,'');setTimeout(function(){ST.busy(false)},2500)}else ST.busy(false);st.busy=false;ok()},30)})}
 function rr(p){return R('bs').value/2*p.k}
 function wire(c){if(c._pp)return;c._pp=1;pointer(c,{on:function(){return st.mode!=='pan'&&!st.busy},
@@ -303,7 +287,7 @@ var P2='<div class="pp-p" data-s="2" hidden><div class="pp-dock"><button type="b
 '<div class="pp-tr" data-k="color"><div class="pp-sw"></div></div>'+
 '<div class="pp-tr" data-k="adj" hidden><div class="pp-g2"><label>Brightness<input type="range" name="br" min="-40" max="40" value="0"></label><label>Contrast<input type="range" name="co" min="-40" max="40" value="0"></label></div><label class="pp-chk"><input type="checkbox" name="au"> Auto enhance (light, color, sharpness)</label></div>'+
 '<div class="pp-tr" data-k="brush" hidden><div class="pp-tabs"><button type="button" data-m="erase" class="on">Erase</button><button type="button" data-m="restore">Restore</button><button type="button" data-m="pan">Pan</button></div><div class="pp-g2"><label>Brush size<input type="range" name="bs" min="8" max="90" value="30"></label><label>Zoom<input type="range" name="z2" min="100" max="400" value="100"></label></div></div>'+
-'<div class="pp-tr" data-k="more" hidden><input type="range" name="tol" min="5" max="60" value="22" hidden><label>Background removal<select name="mt"><option value="hq">High quality (AI, downloads once)</option><option value="ai">Fast (6 MB)</option><option value="none">Keep my background</option></select></label><label class="pp-chk"><input type="checkbox" name="kc" checked> Keep clothes (recommended)</label><div class="pp-btns"><button type="button" data-a="auto">Remove again</button></div></div>'+
+'<div class="pp-tr" data-k="more" hidden><input type="range" name="tol" min="5" max="60" value="22" hidden><label>Background removal<select name="mt"><option value="hq">High quality (AI, downloads once)</option><option value="ai">Fast (6 MB)</option><option value="none">Keep my background</option></select></label><div class="pp-btns"><button type="button" data-a="auto">Remove again</button></div></div>'+
 '<div class="pp-btns"><button type="button" data-a="undo">Undo</button><button type="button" data-a="reset">Reset edits</button></div>'+
 '<div class="pp-nav"><button type="button" class="it-b alt" data-n="1">&larr; Back</button><button type="button" class="it-b" data-n="3">Next: Download &rarr;</button></div></div>';
 var P3='<div class="pp-p" data-s="3" hidden><div data-v="o" class="pp-p"><div class="pp-tabs ot"><button type="button" data-o="one" class="on">Single photo</button><button type="button" data-o="sheet">Print sheet</button></div>'+
@@ -344,7 +328,7 @@ function paintView(){if(!st.seg||!st.vc)return;if(st.raf)return;st.raf=requestAn
 function dirty(){st.dirty=true;paintView()}
 function setMode(m){st.mode=m;$$(root,'[data-s="2"] .pp-tabs button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-m')===m)});if(st.vc)st.vc.style.touchAction=m==='pan'?'auto':'none';ST.ring(null)}
 async function runAuto(first){st.busy=true;ST.busy('Starting...',null,'');await tick();var note='',m=R('mt').value;
-try{if(m!=='none')await cutBg(st.seg,{method:m,first:first,edge:1,clothes:!!(R('kc')&&R('kc').checked),val:function(){return R('tol').value},set:function(v){R('tol').value=v},prog:function(t,p,sub){ST.busy(t,p,sub)},fail:function(t){note=t}});else st.seg.keepAll()}catch(e){}
+try{if(m!=='none')await cutBg(st.seg,{method:m,first:first,edge:1,val:function(){return R('tol').value},set:function(v){R('tol').value=v},prog:function(t,p,sub){ST.busy(t,p,sub)},fail:function(t){note=t}});else st.seg.keepAll()}catch(e){}
 if(note){ST.busy(note,1,'');await new Promise(function(r){setTimeout(r,2500)})}ST.busy(false);st.busy=false;st.dirty=true;paintView()}
 function bsz(p){return R('bs').value/2*p.k}
 function wireBrush(c){pointer(c,{on:function(){return st.step===2&&st.mode!=='pan'&&!st.busy},
